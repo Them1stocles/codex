@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>History's Greatest Battles Map</title>
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet" />
+<link href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" rel="stylesheet" />
+<style>
+  #map {position: absolute; top: 0; left: 0; right: 0; bottom: 0;}
+  .leaflet-popup-content h3{margin:0 0 .5em;font-size:1.1em}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+<script>
+(async () => {
+  const data = await fetch('battles.json').then(r => r.json());
+  const eras = {Ancient:-500, Medieval:500, Early:1500, Modern:1800};
+  const colors = {Ancient:'#d95f02', Medieval:'#7570b3', Early:'#1b9e77', Modern:'#e7298a'};
+  const map = L.map('map').setView([20,0], 2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:18}).addTo(map);
+  const clusters = L.markerClusterGroup();
+  data.forEach(b => {
+    const era = Object.keys(eras).reverse().find(e => b.year >= eras[e]);
+    const marker = L.circleMarker([b.lat, b.lng], {radius:8, color:colors[era], fillOpacity:0.8});
+    marker.bindPopup(`<h3>${b.battle} (${b.year})</h3><a href="${b.link}" target="_blank">Listen on Buzzsprout →</a>`);
+    clusters.addLayer(marker);
+  });
+  map.addLayer(clusters);
+})();
+</script>
+</body>
+</html>
